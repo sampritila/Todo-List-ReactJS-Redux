@@ -1,26 +1,47 @@
 import React from 'react';
-import logo from './logo.svg';
+import { connect } from 'react-redux';
 import './App.css';
+import Header from "./Header/Header";
+import TodoInput from './todoInput/todoInput';
+import ItemsTodo from './itemsTodo/itemsTodo';
+import { ADD_TODO, REMOVE_TODO } from './actions/actions';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+  addTodo = todoText => {
+    this.props.addTodo({ id: this.props.nextId, message: todoText })
+  }
+
+  deleteTodo = id => {
+    this.props.removeTodo(id);
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <div className="todo-container">
+          <Header />
+          <TodoInput todoText="" addTodo={this.addTodo} />
+          <ul>
+            {
+              this.props.todos.map((todo) => {
+                return <ItemsTodo todo={todo} key={todo.id} id={todo.id} deleteTodo={this.deleteTodo} />
+              })
+            }
+          </ul>
+        </div>
+
+      </div>
+    );
+  }
 }
-
-export default App;
+export default connect(state => ({ 
+  todos: Object.values(state.items),
+  nextId: Math.max(...Object.keys(state.items)) + 1,
+}), dispatch => ({
+  addTodo: payload => {
+    dispatch({ type: ADD_TODO, payload })
+  },
+  removeTodo: id => {
+    dispatch({type: REMOVE_TODO, payload: { id }})
+  }
+}))(App);
